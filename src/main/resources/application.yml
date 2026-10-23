@@ -13,13 +13,12 @@ logging:
     console:
 
 openstack:
-  authType: v3applicationcredential
+  authType: v3password
   authUrl: ""
   identityApiVersion: "3"
-  regionName: ""
+  regionName: "RegionOne"
   interface: public
-  applicationCredentialId: ""
-  applicationCredentialSecret: ""
+
 
 server:
   port: 8080

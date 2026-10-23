@@ -2,8 +2,8 @@ package ro.dragomiralin.openstack_mcp_server;
 
 import java.util.List;
 
-import org.springframework.ai.tool.ToolCallback;
-import org.springframework.ai.tool.ToolCallbacks;
+import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -18,8 +18,10 @@ public class OpenstackMcpServerApplication {
 	}
 
 	@Bean
-	public List<ToolCallback> openstackTools(OpenStackCommander openStackCommander) {
-		return List.of(ToolCallbacks.from(openStackCommander));
+	public ToolCallbackProvider openstackTools(OpenStackCommander openStackCommander) {
+		return MethodToolCallbackProvider.builder()
+			.toolObjects(openStackCommander)
+			.build();
 	}
 
 }

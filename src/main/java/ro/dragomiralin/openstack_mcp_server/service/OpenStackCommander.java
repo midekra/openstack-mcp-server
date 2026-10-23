@@ -25,12 +25,20 @@ public class OpenStackCommander {
     private String region;
     @Value("${openstack.interface}")
     private String iface;
-    @Value("${openstack.applicationCredentialId}")
+    @Value("${openstack.applicationCredentialId:}")
     private String appCredId;
-    @Value("${openstack.applicationCredentialSecret}")
+    @Value("${openstack.applicationCredentialSecret:}")
     private String appCredSecret;
 
+
     private static final int PROCESS_TIMEOUT_SECONDS = 60;
+
+    /** Sets env var from yml fallback only when the system environment does not already define it. */
+    private static void inheritIfMissing(Map<String, String> env, String name, String fallback) {
+        if (fallback != null && !fallback.isBlank()) {
+            env.putIfAbsent(name, fallback);
+        }
+    }
 
     /**
      * Runs an OpenStack command using the configured connection credentials.
@@ -59,14 +67,15 @@ public class OpenStackCommander {
             ProcessBuilder builder = new ProcessBuilder(cmd);
             builder.redirectErrorStream(true);
 
+            // System OS_* environment wins (e.g. OS_USERNAME/OS_PASSWORD); yml values only fill gaps
             Map<String, String> env = builder.environment();
-            env.put("OS_AUTH_TYPE", authType);
-            env.put("OS_AUTH_URL", authUrl);
-            env.put("OS_IDENTITY_API_VERSION", apiVersion);
-            env.put("OS_REGION_NAME", region);
-            env.put("OS_INTERFACE", iface);
-            env.put("OS_APPLICATION_CREDENTIAL_ID", appCredId);
-            env.put("OS_APPLICATION_CREDENTIAL_SECRET", appCredSecret);
+            inheritIfMissing(env, "OS_AUTH_TYPE", authType);
+            inheritIfMissing(env, "OS_AUTH_URL", authUrl);
+            inheritIfMissing(env, "OS_IDENTITY_API_VERSION", apiVersion);
+            inheritIfMissing(env, "OS_REGION_NAME", region);
+            inheritIfMissing(env, "OS_INTERFACE", iface);
+            inheritIfMissing(env, "OS_APPLICATION_CREDENTIAL_ID", appCredId);
+            inheritIfMissing(env, "OS_APPLICATION_CREDENTIAL_SECRET", appCredSecret);
 
             Process process = builder.start();
             StringBuilder output = new StringBuilder();
